@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>디지털 기반 수업 혁신 · PBL 설계 멘토</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#f6f4ef;--ink:#1f2a37;--muted:#6b7280;--line:#e3dfd5;--accent:#2f7a63;--accent-soft:#e2f2eb;--warm:#f2a541;--warm-soft:#fdf1dc;--bot:#f1efe9;--mint:#d3f1e4;--peach:#fde3d3;--beige:#f6e7b8;--th:#dfe6f2;--danger:#b4443a}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:"Malgun Gothic","맑은 고딕","Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink);font-size:17px;line-height:1.65}
+button{font:inherit;cursor:pointer}
+input,textarea,select{font:inherit;color:inherit}
+.hidden{display:none!important}
+.jua{font-family:"Jua",sans-serif;font-weight:400}
+
+/* login */
+.login{min-height:100%;display:grid;place-items:center;padding:24px}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:32px 34px;box-shadow:0 6px 24px rgba(0,0,0,.06);width:min(520px,100%)}
+.login h1{font-family:"Jua";font-weight:400;font-size:32px;margin:0 0 4px;color:var(--accent)}
+.login p{color:var(--muted);margin:0 0 20px}
+.field{margin-bottom:14px}
+.field label{display:block;font-weight:700;margin-bottom:4px}
+.field input{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 14px}
+.field input:focus,textarea:focus,select:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
+.btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px 18px;font-weight:700}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+.btn.small{padding:6px 12px;font-size:15px;font-weight:500}
+.note{font-size:14px;color:var(--muted);margin-top:12px}
+.err{color:var(--danger);font-size:15px;min-height:1.4em}
+
+/* app */
+.app{display:flex;flex-direction:column;height:100%}
+header{padding:10px 20px;background:var(--accent);color:#fff;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-family:"Jua";font-weight:400;font-size:24px;margin:0}
+header .who{opacity:.9;font-size:15px}
+header .sp{flex:1}
+.hbtn{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:10px;padding:6px 12px;font-size:15px}
+.hbtn:hover{background:rgba(255,255,255,.28)}
+.status{font-size:14px;opacity:.9}
+.body{flex:1;display:grid;grid-template-columns:230px minmax(0,1fr) 380px;min-height:0}
+nav.steps{background:#fff;border-right:1px solid var(--line);overflow-y:auto;padding:12px 10px}
+.stepbtn{display:flex;align-items:flex-start;gap:8px;width:100%;text-align:left;border:none;background:none;border-radius:10px;padding:8px 10px;margin-bottom:2px;color:var(--ink);font-size:15.5px}
+.stepbtn:hover{background:#f4f2ec}
+.stepbtn.on{background:var(--warm-soft);font-weight:700}
+.stepbtn .n{flex:0 0 26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#dcd8cf;color:#fff;font-size:13px;font-weight:700;margin-top:1px}
+.stepbtn.done .n{background:var(--accent)}
+.stepbtn.part .n{background:var(--warm)}
+.navnote{font-size:13px;color:var(--muted);padding:10px;border-top:1px dashed var(--line);margin-top:10px}
+
+main{overflow-y:auto;padding:22px 28px 60px}
+.stephead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.stephead h2{font-family:"Jua";font-weight:400;font-size:28px;margin:0}
+.stephead .lv{color:var(--muted);font-size:15px}
+.guide{background:#fff;border:1px solid var(--line);border-radius:14px;margin-bottom:18px;overflow:hidden}
+.guide .todo{padding:14px 18px;background:var(--accent-soft);border-bottom:1px solid var(--line)}
+.guide .todo b{color:var(--accent)}
+.guide details{border-bottom:1px solid var(--line)}
+.guide details:last-child{border-bottom:none}
+.guide summary{padding:10px 18px;cursor:pointer;font-weight:700;list-style:none}
+.guide summary::before{content:"▸ ";color:var(--accent)}
+.guide details[open] summary::before{content:"▾ "}
+.guide .in{padding:2px 18px 14px}
+.guide ul{margin:4px 0;padding-left:22px}
+.checks label{display:flex;gap:8px;align-items:flex-start;padding:3px 0;cursor:pointer}
+.checks input{margin-top:6px;width:17px;height:17px;accent-color:var(--accent)}
+.example{background:#faf8f2;border-left:4px solid var(--beige);padding:10px 14px;border-radius:6px;white-space:pre-wrap;font-size:15.5px}
+.form{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.form h3{margin:0 0 12px;font-size:18px}
+.f{margin-bottom:16px}
+.f>label{display:block;font-weight:700;margin-bottom:4px}
+.f .hint{font-size:14px;color:var(--muted);margin:-2px 0 6px}
+.f input[type=text],.f textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fffefb}
+.f textarea{resize:vertical;min-height:70px;overflow:hidden}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.comp{display:flex;gap:14px;flex-wrap:wrap}
+.comp label{display:flex;gap:6px;align-items:center;cursor:pointer}
+.comp input{width:17px;height:17px;accent-color:var(--accent)}
+.rows{width:100%;border-collapse:collapse;margin-bottom:6px}
+.rows th{background:var(--th);font-size:15px;padding:6px;border:1px solid #cfd6e3}
+.rows td{border:1px solid var(--line);padding:4px;vertical-align:top}
+.rows textarea,.rows input{width:100%;border:none;background:transparent;padding:6px;resize:vertical;min-height:44px;overflow:hidden}
+.rows textarea:focus,.rows input:focus{outline:2px solid var(--warm);background:#fffbea}
+.del{border:none;background:none;color:var(--danger);font-size:15px}
+.add{border:1px dashed #9aa;background:#fff;color:#567;border-radius:8px;padding:5px 12px;font-size:14px}
+.stagebox{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px;background:#fffefb}
+.stagebox .t{font-weight:700;color:var(--accent);margin-bottom:6px;display:flex;gap:10px;align-items:center}
+.stagebox .t input{width:110px;border:1px solid var(--line);border-radius:8px;padding:4px 8px;font-weight:400}
+.navrow{display:flex;justify-content:space-between;margin-top:18px}
+
+aside.mentor{border-left:1px solid var(--line);background:#fbfaf7;display:flex;flex-direction:column;min-height:0}
+.mhead{padding:12px 16px;border-bottom:1px solid var(--line);background:#fff}
+.mhead b{font-family:"Jua";font-weight:400;font-size:20px;color:var(--accent)}
+.mhead .rem{font-size:13px;color:var(--muted)}
+.msgs{flex:1;overflow-y:auto;padding:14px}
+.msg{margin-bottom:12px;padding:10px 14px;border-radius:14px;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;font-size:15.5px}
+.msg.bot{background:var(--bot);border-top-left-radius:4px}
+.msg.user{background:var(--accent);color:#fff;margin-left:28px;border-top-right-radius:4px}
+.msg.sys{background:#fde8e6;color:#8b2a20}
+.msg .tag{display:block;font-size:12px;opacity:.75;margin-bottom:2px}
+.typing span{display:inline-block;width:8px;height:8px;margin:0 2px;border-radius:50%;background:#aaa;animation:b 1s infinite}
+.typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,80%,100%{opacity:.3}40%{opacity:1}}
+.mactions{display:flex;gap:6px;padding:8px 12px;flex-wrap:wrap;border-top:1px solid var(--line);background:#fff}
+.mactions button{flex:1;min-width:100px;border:1px solid var(--accent);background:#fff;color:var(--accent);border-radius:10px;padding:7px 8px;font-size:15px}
+.mactions button.primary{background:var(--accent);color:#fff}
+.mactions button:disabled{opacity:.45;cursor:default}
+.ask{display:flex;gap:8px;padding:8px 12px 12px;background:#fff}
+.ask textarea{flex:1;border:1px solid var(--line);border-radius:10px;padding:8px 10px;resize:none;height:46px;font-size:15.5px}
+.ask button{border:none;background:var(--accent);color:#fff;border-radius:10px;padding:0 14px;font-weight:700}
+
+/* modal + preview doc */
+.modal{position:fixed;inset:0;background:rgba(20,25,30,.45);display:flex;align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto;z-index:20}
+.modal .box{background:#fff;border-radius:14px;width:min(900px,100%);padding:18px 20px 26px}
+.modal .bar{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.modal .bar h3{margin:0;flex:1}
+.doc{font-size:14.5px;padding:10px 6px}
+.titlebox{display:flex;margin-bottom:6px}
+.titlebox .k{background:var(--peach);font-size:24px;font-weight:700;display:grid;place-items:center;width:58px;writing-mode:vertical-rl;letter-spacing:10px}
+.titlebox .v{flex:1;background:var(--mint);text-align:center;padding:12px 10px}
+.titlebox .fixed{font-size:21px;font-weight:700}
+.titlebox .topic{font-size:19px;font-weight:700;color:#1b7a2a;display:block}
+.byline{text-align:right;margin-bottom:18px}
+.sec{display:inline-block;background:var(--beige);font-weight:700;font-size:16px;padding:6px 16px;margin:22px 0 10px}
+.sub2{font-weight:700;margin:10px 0 4px}
+.doc table{width:100%;border-collapse:collapse}
+.doc th,.doc td{border:1px solid #333;padding:5px 8px;vertical-align:middle;text-align:left;white-space:pre-wrap}
+.doc th{background:var(--th);text-align:center;width:84px;word-break:keep-all}
+.doc .c{text-align:center}
+.doc .q{color:#1d4f91;font-weight:700}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#1f2a37;color:#fff;padding:10px 18px;border-radius:999px;font-size:15px;z-index:30;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+
+/* admin */
+.admin{max-width:1150px;margin:0 auto;padding:24px}
+.admin h2{font-family:"Jua";font-weight:400;font-size:28px;margin:0 0 14px;color:var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:18px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.stat .l{font-size:14px;color:var(--muted)}
+.stat .v{font-size:26px;font-weight:700}
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:18px}
+.panel h3{margin:0 0 10px;font-size:18px}
+.cfg{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.cfg select,.cfg input{border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.tt{width:100%;border-collapse:collapse;font-size:15.5px}
+.tt th,.tt td{border-bottom:1px solid var(--line);padding:9px 8px;text-align:left;vertical-align:middle}
+.tt th{background:#f4f2ec;font-size:14.5px}
+.bar10{display:flex;gap:2px}
+.bar10 i{width:12px;height:12px;border-radius:3px;background:#e2ded4;display:block}
+.bar10 i.d{background:var(--accent)}.bar10 i.p{background:var(--warm)}
+
+@media (max-width:1100px){.body{grid-template-columns:200px minmax(0,1fr)} aside.mentor{position:fixed;right:0;top:0;bottom:0;width:min(380px,100%);z-index:15;box-shadow:-6px 0 20px rgba(0,0,0,.15);transform:translateX(100%);transition:transform .2s} aside.mentor.open{transform:none} .mtoggle{display:inline-block!important}}
+@media (max-width:760px){.body{grid-template-columns:1fr} nav.steps{display:flex;overflow-x:auto;border-right:none;border-bottom:1px solid var(--line);padding:6px} .stepbtn{flex:0 0 auto;width:auto;white-space:nowrap} .navnote{display:none} main{padding:16px} .grid2{grid-template-columns:1fr}}
+.mtoggle{display:none}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<section class="login" id="loginView">
+  <div class="card">
+    <h1>🧭 PBL 설계 멘토</h1>
+    <p>디지털 기반 수업 혁신 동아리 · 프로젝트 기반 학습 단원 설계</p>
+    <div class="field"><label for="inName">이름</label><input id="inName" type="text" placeholder="예: 김민수" autocomplete="off"></div>
+    <div class="field"><label for="inSchool">학교</label><input id="inSchool" type="text" placeholder="예: ○○중학교" autocomplete="off"></div>
+    <div class="err" id="loginErr"></div>
+    <button class="btn" id="loginBtn" style="width:100%">시작하기 / 이어서 쓰기</button>
+    <div class="note">가입은 필요 없어요. 다음에 같은 이름으로 들어오면 쓰던 설계안이 이어서 열려요.<br>같은 이름의 선생님이 계시면 이름 뒤에 학교명을 붙여 주세요. (예: 김민수용문중)</div>
+    <div class="note" id="localNote"></div>
+  </div>
+</section>
+
+<!-- ============ TEACHER APP ============ -->
+<section class="app hidden" id="appView">
+  <header>
+    <h1>🧭 PBL 설계 멘토</h1>
+    <span class="who" id="whoLbl"></span>
+    <span class="sp"></span>
+    <span class="status" id="saveLbl"></span>
+    <button class="hbtn" id="previewBtn">📄 전체 보기</button>
+    <button class="hbtn" id="hwpBtn">한글 저장</button>
+    <button class="hbtn mtoggle" id="mToggle">💬 멘토</button>
+    <button class="hbtn" id="logoutBtn">나가기</button>
+  </header>
+  <div class="body">
+    <nav class="steps" id="stepNav"></nav>
+    <main id="stepMain"></main>
+    <aside class="mentor" id="mentor">
+      <div class="mhead"><b>AI 멘토</b><div class="rem" id="remLbl"></div></div>
+      <div class="msgs" id="msgs"></div>
+      <div class="mactions">
+        <button class="primary" id="fbBtn">피드백 받기</button>
+        <button id="hintBtn">힌트 1단계</button>
+      </div>
+      <div class="ask"><textarea id="askIn" placeholder="멘토에게 질문하기 (Enter 보내기)"></textarea><button id="askBtn">보내기</button></div>
+    </aside>
+  </div>
+</section>
+
+<!-- ============ ADMIN ============ -->
+<section class="hidden" id="adminView">
+  <div class="admin" id="adminBox"></div>
+</section>
+
+<div class="modal hidden" id="modal"><div class="box">
+  <div class="bar"><h3 id="modalTitle">설계안 전체 보기</h3><button class="btn small" id="modalHwp">한글 저장</button><button class="btn ghost small" id="modalClose">닫기</button></div>
+  <div class="doc" id="modalDoc"></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script type="text/plain" id="hwpx-tpl">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</script>
+<script>
+// =====================================================================
+// 설정: Apps Script 웹 앱 주소(…/exec)를 따옴표 안에 붙여 넣으세요.
+// 비워 두면 이 브라우저에만 저장되는 시험 모드로 작동합니다(AI 피드백 없음).
+const API_URL = "";
+// =====================================================================
+
+const STAGES=[["s1","문제제시"],["s2","문제분석"],["s3","탐구 계획"],["s4","자료 탐구 및 분석"],["s5","해결안 도출 및 보고서 작성"],["s6","발표 및 성찰"]];
+const COMPS=["문제해결","추론","의사소통","연결","정보처리"];
+const FEAT=[["intro","도입"],["dev1","전개 1"],["dev2","전개 2"],["wrap","정리"]];
+
+// ---------------------------------------------------------------- 단계별 가이드라인
+const STEPS=[
+{ title:"주제·대상", lv:"단원 기획",
+  todo:"어떤 학년의 어떤 단원을 프로젝트로 설계할지 정하고, 프로젝트 주제를 가제로 한 줄 써 봅니다.",
+  why:"프로젝트는 여러 차시가 하나의 이야기로 이어집니다. 그래서 1차시가 아니라 '단원' 단위로 생각을 시작해야 차시들이 따로 놀지 않습니다.",
+  checks:["프로젝트로 다루기에 알맞은 분량(보통 4~8차시)의 단원인가?","주제가 학생의 삶이나 학교·지역의 실제 상황과 연결되는가?","결과를 누군가에게 보여 줄 수 있는 산출물로 이어질 수 있는가?"],
+  mistakes:["한 개념(1차시 분량)을 프로젝트 주제로 잡는 경우","재미있는 소재부터 정하고 성취기준을 나중에 끼워 맞추는 경우"],
+  example:"대상: 중학교 1학년 / 교과: 수학\n대단원: 6. 자료의 정리와 해석 / 중단원: 6-5. 통계적 문제해결 과정\n주제: 데이터로 청소년 사회문제 바꾸기",
+  done:p=>[p.target,p.subject,p.bigUnit,p.topic] },
+{ title:"성취기준 분석", lv:"백워드 ①",
+  todo:"교육과정 문서에서 이 단원의 성취기준을 그대로 옮기고, 학생이 '무엇을 할 수 있어야 하는지'를 동사 중심으로 분석해 봅니다.",
+  why:"성취기준은 설계의 출발점입니다. 성취기준의 동사가 곧 학습목표가 되고, 루브릭의 평가 요소가 됩니다. 여기서 정확히 분석해 두면 뒤 단계가 쉬워집니다.",
+  checks:["성취기준 코드와 문장을 교육과정 원문 그대로 옮겼는가?","핵심 동사(예: 설정하고, 수집하여 분석하고, 해석할 수 있다)를 모두 찾았는가?","동사마다 학생이 실제로 '보여 주어야 할 행동'을 적어 보았는가?","성취기준을 너무 많이 넣어 범위가 넓어지지 않았는가?"],
+  mistakes:["지도서의 차시 학습목표를 성취기준으로 착각하는 경우","성취기준 문장을 기억에 의존해 바꿔 쓰는 경우 → 국가교육과정정보센터(ncic.go.kr) 원문과 대조하세요"],
+  example:"[9수04-04] 통계적 탐구 문제를 설정하고, 공학 도구를 이용하여 자료를 수집하여 분석하고, 그 결과를 해석할 수 있다.\n\n분석 메모\n· 설정한다 → 스스로 탐구 질문과 가설을 세운다\n· 수집하여 분석한다 → 공학 도구로 자료를 모으고 표·그래프로 정리한다\n· 해석한다 → 그래프에서 분포의 특징을 근거를 들어 말한다",
+  done:p=>[p.standard,p.notes.standardVerbs] },
+{ title:"탐구 질문·PBL 문제", lv:"단원 기획",
+  todo:"단원 전체를 이끌 탐구 질문, 학생에게 제시할 과제 상황(PBL 문제), 최종 산출물과 그것을 보여 줄 대상을 정합니다.",
+  why:"탐구 질문은 프로젝트 내내 학생이 다시 돌아오는 질문입니다. 산출물을 실제 청중(학교, 가족, 지역)에게 공개할 때 학생의 책임감과 몰입이 커집니다.",
+  checks:["정답이 하나로 정해지지 않은 열린 질문인가?","학생이 읽고 바로 이해할 수 있는 말인가?","성취기준의 동사를 실제로 해야만 답할 수 있는 질문인가?","최종 산출물과 공개 대상이 구체적인가?"],
+  mistakes:["'~을 알아보자' 같은 활동 제목을 질문으로 쓰는 경우","검색 한 번으로 답이 나오는 질문","산출물이 교사에게만 제출하는 보고서·PPT로 끝나는 경우"],
+  example:"탐구 질문: 데이터로 청소년 사회문제를 분석하고 변화를 만들어 낼 수 있을까?\n산출물: 모둠별 캠페인 포스터 → 급식실 앞·복도에 실제 게시",
+  done:p=>[p.dq,p.problem,p.notes.product] },
+{ title:"학습목표·교과역량", lv:"백워드 ②",
+  todo:"프로젝트 전체를 마쳤을 때 학생이 할 수 있게 될 것을 2~3개의 학습목표로 쓰고, 관련된 교과역량을 고릅니다.",
+  why:"학습목표는 다음 단계에서 루브릭의 평가 요소로 그대로 이어집니다. 목표가 흐리면 평가도 흐려집니다.",
+  checks:["학생이 주어이고, 관찰할 수 있는 행동 동사로 썼는가? (설명할 수 있다, 작성할 수 있다, 비교·해석할 수 있다 등)","2단계에서 분석한 성취기준 동사와 하나하나 연결되는가?","디지털 도구 관련 목표가 있다면 '도구 사용' 자체가 아니라 수학적 목적과 함께 썼는가?","고른 교과역량이 실제 활동에서 드러나는가?"],
+  mistakes:["'이해한다', '안다'처럼 확인할 수 없는 동사","'지도한다'처럼 교사가 주어인 문장","'포스터를 만든다'처럼 활동만 있고 배움이 없는 목표"],
+  example:"① 청소년 사회문제 관련 공공데이터를 수집·검증하고 도수분포표로 정리할 수 있다.\n② 히스토그램·상대도수 분포다각형을 작성하고 두 집단을 비교·해석할 수 있다.\n③ 디지털 도구로 데이터를 시각화하여 캠페인 산출물을 제작할 수 있다.",
+  done:p=>[p.objectives,p.competencies] },
+{ title:"평가 루브릭", lv:"백워드 ③",
+  todo:"활동을 짜기 전에, 학습목표에 도달했는지 무엇을 보고 판단할지 먼저 정합니다. 평가 요소 3~5개를 우수·보통·미흡으로 기술합니다.",
+  why:"평가를 먼저 정해야 활동이 목표에 맞게 설계됩니다(백워드 설계). 또 프로젝트는 모둠 활동이 많아 개인이 무엇을 이해했는지 따로 볼 장치가 꼭 필요합니다.",
+  checks:["학습목표 하나하나가 평가 요소로 연결되는가?","수준(우수·보통·미흡)이 '잘함/부족' 같은 정도어가 아니라 관찰 가능한 행동으로 구분되는가?","과정(탐구 과정)과 결과(산출물)를 모두 보는가?","모둠 산출물과 개인의 이해를 구분하는 장치(개별 보고서, 개인 활동지 등)가 있는가?","디자인·꾸미기가 평가에서 지나치게 큰 비중을 차지하지 않는가?"],
+  mistakes:["모둠 점수만 있어 개인의 이해를 확인할 수 없는 경우","'매우 잘함/잘함/보통'처럼 수준 차이를 정도어로만 쓰는 경우","산출물의 겉모양 위주로 평가하는 경우"],
+  example:"평가 요소: ① 탐구 과정(30점) ② 자료의 정리(20점) ③ 자료의 해석(30점) ④ 개별 보고서(20점) ⑤ 산출물 Pass/Fail\n\n③ 자료의 해석\n우수: 통계 용어를 사용하여 분포 특징을 2가지 이상 서술하고 상대도수로 두 집단을 수치 근거와 함께 비교함\n보통: 분포 특징을 1가지 서술했으나 용어가 부정확하고 비교의 수치 근거가 부족함\n미흡: 분포 특징을 서술하지 못하거나 데이터와 무관한 감상을 씀",
+  done:p=>[p.rubric.length?p.rubric[0].element:"",p.rubric.length?p.rubric[0].high:""] },
+{ title:"단원 전체 흐름", lv:"단원 기획",
+  todo:"PBL 6단계(문제제시 → 문제분석 → 탐구 계획 → 자료 탐구 및 분석 → 해결안 도출 및 보고서 작성 → 발표 및 성찰)에 따라 단원 전체의 흐름과 차시를 배정합니다.",
+  why:"한 차시씩 따로 설계하면 단원이 끊어집니다. 전체 흐름을 먼저 그려 보면 각 차시가 탐구 질문에 답해 가는 과정에서 어떤 역할을 하는지 보입니다.",
+  checks:["단계마다 학생이 무엇을 결정하거나 만들어 내는지 분명한가?","중간 점검과 피드백(수정할 기회)이 들어갈 시점이 있는가?","첫 차시와 마지막 차시에 탐구 질문으로 돌아오는가?","전체 차시 수가 학교 일정에서 현실적인가?","교사 설명만 하는 차시가 지나치게 많지 않은가?"],
+  mistakes:["문제 제시에 차시를 너무 많이 쓰는 경우","발표로 끝나고 성찰이 빠진 경우","5단계 루브릭에서 정한 평가가 어느 단계에서 이루어지는지 연결이 없는 경우"],
+  example:"문제제시(1차시): 뉴스·통계 탐색, 탐구 질문 공유, 모둠 주제·가설 설정\n탐구 계획(2~3차시): 공공데이터 수집·출처 기록, 자료 검증·도수분포표\n자료 탐구 및 분석(4차시): 그래프로 두 집단 공정하게 비교\n해결안 도출(5차시): 캠페인 포스터 제작 + 개별 보고서\n발표 및 성찰(6차시): 실제 게시, 갤러리 워크, 성찰",
+  done:p=>STAGES.map(([k])=>p.stages[k].activity) },
+{ title:"차시별 계획·AI 활용", lv:"단원 기획",
+  todo:"차시마다 단계, 주요 활동, AI·디지털 활용을 정리하고, 이 중 지도안으로 상세하게 설계할 2개 차시를 고른 뒤 그 이유를 씁니다.",
+  why:"AI·디지털 도구는 목적이 먼저입니다. 도구가 어떤 목표나 평가에 기여하는지 설명할 수 있어야 수업 혁신이 됩니다. 2개 차시를 고르는 이유를 쓰면서 단원 안에서 각 차시의 역할을 다시 생각해 보게 됩니다.",
+  checks:["각 도구가 어떤 학습목표나 평가에 기여하는지 설명할 수 있는가?","학생이 AI의 결과를 수학적으로 검증하는 장면이 있는가?","출처 표기, 개인정보, 연령 제한(만 14세 미만 사용 제한 등)을 확인했는가?","기기나 네트워크가 안 될 때의 대안이 있는가?","상세 설계할 2개 차시를 고른 이유가 분명한가?"],
+  mistakes:["도구를 쓰기 위해 활동을 만드는 경우","모든 차시에 AI를 넣는 경우","AI가 답을 대신 내고 학생은 옮겨 적기만 하는 구조"],
+  example:"4차시★ | 자료 탐구 및 분석 | 히스토그램·상대도수 분포다각형으로 두 집단 비교 | 이지통계·통그라미로 그래프 재현 후 손 그래프와 비교\n\n고른 이유: 4차시는 상대도수의 필요성을 학생 스스로 발견하는 핵심 차시이고, 공학 도구가 수학적 판단을 돕는 장면이 가장 잘 드러난다.",
+  done:p=>[p.lessons.length?p.lessons[0].activities:"",p.aiPlan,p.notes.selectReason] },
+{ title:"지도안 ① 첫 번째 차시", lv:"차시 설계", feat:0,
+  todo:"고른 첫 번째 차시의 지도안을 씁니다. 도입·전개·정리마다 학생의 생각을 여는 핵심 질문을 먼저 정하고, 그 질문에 맞는 활동과 유의점을 씁니다.",
+  why:"핵심 질문은 수업의 뼈대입니다. 활동을 나열하기보다 질문으로 수업을 설계하면 학생이 무엇을 생각해야 하는지가 분명해집니다. 예상되는 오류와 그에 대한 피드백을 미리 생각해 두면 오류가 배움의 재료가 됩니다.",
+  checks:["차시 목표가 단원 학습목표의 일부로 연결되는가?","핵심 질문이 예/아니오로 끝나지 않고 학생의 사고를 여는가?","전개에서 학생이 할 일이 구체적인가?","예상되는 학생 오류와 교사의 피드백을 유의점에 적었는가?","루브릭의 어느 평가 요소를 이 차시 어디에서 보는지 드러나는가?"],
+  mistakes:["활동만 나열하고 질문이 없는 경우","예상 오류가 없어 '정답 확인' 위주로 흐르는 경우","정리가 '배운 내용 정리하기' 한 줄로 끝나는 경우"],
+  example:"도입 질문: 도수분포표에서 무엇을 발견할 수 있는가?\n전개 질문 1: 두 히스토그램을 나란히 놓으면 바로 비교할 수 있나요?\n전개 질문 2: 상대도수로 바꾸면 무엇을 더 잘 볼 수 있나요?\n정리 질문: 해석한 내용을 전달하려면 어떤 방법을 쓸까?\n\n유의점 예: 계급 크기 불일치, 세로축 최댓값이 제각각인 오류 → 순회하며 두 모둠의 그래프를 나란히 보여 주고 질문으로 피드백",
+  done:p=>{const f=p.featured[0];return [f.title,f.objective,f.intro.question,f.dev1.activity]} },
+{ title:"지도안 ② 두 번째 차시", lv:"차시 설계", feat:1,
+  todo:"두 번째 차시의 지도안을 씁니다. 첫 번째 차시와 어떻게 이어지는지, 학생이 이 차시에서 무엇을 새로 해내는지 생각하며 씁니다.",
+  why:"두 차시가 단원 흐름 속에서 서로 다른 역할을 맡을 때 설계가 풍부해집니다. 앞 차시에서 생긴 결과물이나 오류를 이 차시에서 어떻게 활용할지도 생각해 보세요.",
+  checks:["첫 번째 차시와의 연결(앞 차시 결과물 활용 등)이 드러나는가?","핵심 질문이 학생의 사고를 여는가?","예상 오류와 피드백이 있는가?","평가 장면(루브릭 연결)이 드러나는가?","개인의 이해를 확인하는 장면이 있는가?"],
+  mistakes:["첫 번째 차시와 같은 구조를 반복하는 경우","모둠 활동만 있고 개인 확인이 없는 경우"],
+  example:"5차시: 캠페인 포스터 만들기\n도입 질문: 우리 모둠이 데이터에서 발견한 가장 중요한 사실 한 가지는?\n전개: 핵심 메시지 1문장 확정 → 캔바로 제작(직접 그린 그래프·출처·행동 제안 포함)\n정리: 개별 보고서(가설 검증, 삶과의 연결, 배운 점)\n\n유의점 예: AI 디자인 추천에 그래프가 묻히지 않도록 Pass 조건 4가지를 먼저 확인하게 함",
+  done:p=>{const f=p.featured[1];return [f.title,f.objective,f.intro.question,f.dev1.activity]} },
+{ title:"자료·최종 점검", lv:"마무리",
+  todo:"교수·학습자료와 참고문헌을 정리하고, 설계안 전체가 하나로 연결되는지 스스로 점검합니다. 수업 성찰은 수업을 마친 뒤에 씁니다.",
+  why:"마지막 점검에서 성취기준 → 학습목표 → 루브릭 → 활동이 한 줄로 이어지는지 확인하는 과정이 백워드 설계의 핵심입니다.",
+  checks:["성취기준의 동사가 학습목표 → 루브릭 → 활동으로 끊기지 않고 이어지는가?","탐구 질문이 첫 차시와 마지막 차시에 모두 등장하는가?","모둠 결과와 개인의 이해를 구분하는 장치가 실제 차시에 들어 있는가?","학생이 민감한 주제를 고를 수 있다면 정서 보호 장치가 있는가?","디지털 도구가 안 될 때의 대안이 있는가?"],
+  mistakes:["참고문헌에 실제로 보지 않은 자료를 넣는 경우","앞 단계에서 바꾼 내용(예: 학습목표)을 루브릭에 반영하지 않은 경우"],
+  example:"참고문헌 예\n교육부(2022). 수학과 교육과정. 교육부 고시 제2022-33호[별책8].",
+  done:p=>[p.materials,p.refs] }
+];
+
+// ---------------------------------------------------------------- 상태
+function emptyPlan(){
+  const p={topic:"",author:"",school:"",target:"",subject:"수학",bigUnit:"",midUnit:"",standard:"",dq:"",method:"프로젝트 기반 학습(PBL)",genAI:"",edutech:"",
+    problem:"",objectives:"",competencies:"",stages:{},aiPlan:"",lessons:[],rubric:[],passfail:"",featured:[],materials:"",reflGood:"",reflImprove:"",reflResult:"",refs:"",
+    notes:{standardVerbs:"",product:"",selectReason:""},checks:{},progress:null};
+  STAGES.forEach(([k])=>p.stages[k]={activity:"",period:""});
+  for(let i=0;i<2;i++){const f={period:"",title:"",objective:""};FEAT.forEach(([k])=>f[k]={question:"",activity:"",notes:""});p.featured.push(f);}
+  return p;
+}
+function mergePlan(saved){
+  const base=emptyPlan(); if(!saved||typeof saved!=="object") return base;
+  const out=Object.assign(base,saved);
+  out.notes=Object.assign(emptyPlan().notes,saved.notes||{});
+  out.stages=Object.assign(emptyPlan().stages,saved.stages||{});
+  if(!Array.isArray(out.featured)||out.featured.length<2) out.featured=emptyPlan().featured;
+  out.checks=saved.checks||{}; if(!Array.isArray(out.lessons)) out.lessons=[]; if(!Array.isArray(out.rubric)) out.rubric=[];
+  return out;
+}
+let S={name:"",school:"",plan:emptyPlan(),chat:{},hint:{},step:0,remaining:null,cap:null,busy:false,dirty:false};
+const LOCAL=!API_URL;
+const $=id=>document.getElementById(id);
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function toast(t){const e=$("toast");e.textContent=t;e.classList.add("on");clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.remove("on"),2600);}
+function normName(n){return String(n||"").replace(/\s+/g,"").slice(0,30);}
+
+// ---------------------------------------------------------------- 서버
+async function api(payload){
+  if(LOCAL) return localApi(payload);
+  const r=await fetch(API_URL,{method:"POST",body:JSON.stringify(payload)});
+  if(!r.ok) throw new Error("서버 응답 오류 ("+r.status+")");
+  return r.json();
+}
+function localApi(p){ // 시험 모드: 이 브라우저에만 저장
+  const k="pblmentor-local-"+normName(p.name);
+  try{
+    if(p.action==="load"){const s=JSON.parse(localStorage.getItem(k)||"null"); return s?{ok:true,exists:true,...s}:{ok:true,exists:false};}
+    if(p.action==="save"){localStorage.setItem(k,JSON.stringify({school:p.school,plan:p.plan,chat:p.chat,step:p.step})); return {ok:true,saved:new Date().toTimeString().slice(0,5)};}
+    if(p.action==="ai") return {ok:false,error:"시험 모드에서는 AI 멘토를 쓸 수 없어요. (관리자가 서버 주소를 설정하면 작동해요.)"};
+  }catch(e){return {ok:false,error:"이 브라우저에 저장할 수 없어요."};}
+  return {ok:false,error:"시험 모드에서는 지원하지 않는 기능이에요."};
+}
+
+// ---------------------------------------------------------------- 로그인
+$("localNote").textContent=LOCAL?"※ 지금은 시험 모드예요. 이 브라우저에만 저장되고 AI 멘토는 작동하지 않아요.":"";
+async function login(){
+  const name=normName($("inName").value), school=$("inSchool").value.trim();
+  if(!name){$("loginErr").textContent="이름을 입력해 주세요.";return;}
+  $("loginBtn").disabled=true;$("loginErr").textContent="불러오는 중…";
+  try{
+    const r=await api({action:"load",name});
+    if(!r.ok) throw new Error(r.error||"불러오기 실패");
+    S.name=name; S.school=school||r.school||"";
+    S.plan=mergePlan(r.plan); S.chat=r.chat&&typeof r.chat==="object"?r.chat:{}; S.hint={};
+    S.step=Math.max(0,Math.min(STEPS.length-1,(+r.step||1)-1));
+    S.remaining=r.remaining??null; S.cap=r.cap??null;
+    if(!S.plan.author) S.plan.author=$("inName").value.trim();
+    if(!S.plan.school) S.plan.school=S.school;
+    try{localStorage.setItem("pblmentor-last",JSON.stringify({name:$("inName").value.trim(),school}));}catch(e){}
+    $("loginView").classList.add("hidden");$("appView").classList.remove("hidden");
+    $("whoLbl").textContent=`${S.plan.author||name} 선생님${S.school?" · "+S.school:""}`;
+    renderAll(); if(!r.exists) save(true);
+    toast(r.exists?"지난번 설계안을 불러왔어요":"새 설계안을 시작해요");
+  }catch(e){$("loginErr").textContent=e.message||"연결에 실패했어요. 잠시 후 다시 시도해 주세요.";}
+  finally{$("loginBtn").disabled=false;}
+}
+$("loginBtn").onclick=login;
+["inName","inSchool"].forEach(id=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.isComposing)login();}));
+try{const l=JSON.parse(localStorage.getItem("pblmentor-last")||"null");if(l){$("inName").value=l.name||"";$("inSchool").value=l.school||"";}}catch(e){}
+$("logoutBtn").onclick=async()=>{ if(S.dirty) await save(true); location.hash=""; location.reload(); };
+
+// ---------------------------------------------------------------- 저장
+let saveTimer=null;
+function markDirty(){S.dirty=true;$("saveLbl").textContent="입력 중…";clearTimeout(saveTimer);saveTimer=setTimeout(()=>save(),2500);}
+function calcProgress(){
+  const st=STEPS.map(s=>{const v=s.done(S.plan).map(x=>String(x||"").trim()).filter(Boolean).length,t=s.done(S.plan).length;return v===0?0:(v===t?2:1);});
+  S.plan.progress={steps:st,pct:Math.round(st.reduce((a,b)=>a+b,0)/(st.length*2)*100)};
+  return st;
+}
+async function save(force){
+  if(!S.name) return; if(!S.dirty&&!force) return;
+  clearTimeout(saveTimer); calcProgress();
+  $("saveLbl").textContent="저장 중…";
+  try{
+    const r=await api({action:"save",name:S.name,school:S.school,plan:S.plan,chat:S.chat,step:S.step+1});
+    if(!r.ok) throw new Error(r.error);
+    S.dirty=false; $("saveLbl").textContent="저장됨 "+(r.saved||"").slice(-5);
+  }catch(e){ $("saveLbl").textContent="⚠ 저장 실패 (자동 재시도)"; saveTimer=setTimeout(()=>save(true),8000); }
+}
+window.addEventListener("beforeunload",e=>{if(S.dirty){save(true);e.preventDefault();e.returnValue="";}});
+
+// ---------------------------------------------------------------- 렌더링
+function get(path){return path.split(".").reduce((o,k)=>o?.[k],S.plan)??"";}
+function set(path,val){const ks=path.split(".");let o=S.plan;for(let i=0;i<ks.length-1;i++)o=o[ks[i]];o[ks[ks.length-1]]=val;}
+function ta(path,label,hint,rows){return `<div class="f"><label>${label}</label>${hint?`<div class="hint">${hint}</div>`:""}<textarea data-path="${path}" rows="${rows||3}">${esc(get(path))}</textarea></div>`;}
+function tx(path,label,hint,ph){return `<div class="f"><label>${label}</label>${hint?`<div class="hint">${hint}</div>`:""}<input type="text" data-path="${path}" value="${esc(get(path))}" placeholder="${esc(ph||"")}"></div>`;}
+
+const FORMS=[
+ ()=>`<div class="grid2">${tx("author","이름")}${tx("school","학교")}${tx("target","대상","","예: 중학교 2학년")}${tx("subject","교과목")}${tx("bigUnit","대단원")}${tx("midUnit","중단원")}</div>${tx("topic","프로젝트 주제 (가제)","설계안 제목 상자에 들어가요.")}`,
+ ()=>`${ta("standard","성취기준","교육과정 원문의 코드와 문장을 그대로 붙여 넣으세요.",3)}${ta("notes.standardVerbs","성취기준 분석 메모","핵심 동사마다 학생이 실제로 보여 주어야 할 행동을 적어 보세요. (설계안에는 들어가지 않는 공부용 메모)",5)}`,
+ ()=>`${ta("dq","탐구 질문","단원 전체를 이끄는 열린 질문",2)}${ta("problem","PBL 문제 (과제 상황)","학생에게 제시할 상황과 과제를 학생이 읽을 말로 써 보세요.",4)}${ta("notes.product","최종 산출물과 공개 대상","무엇을 만들어 누구에게 보여 주나요? (공부용 메모)",2)}${tx("method","수업 방법")}`,
+ ()=>`${ta("objectives","학습목표 (프로젝트 전체)","① ② ③으로 2~3개. 학생이 주어인 관찰 가능한 행동으로.",4)}<div class="f"><label>교과역량</label><div class="comp">${COMPS.map(c=>`<label><input type="checkbox" data-comp="${c}" ${(S.plan.competencies||"").includes(c)?"checked":""}>${c}</label>`).join("")}</div></div>`,
+ ()=>{const rows=S.plan.rubric.map((r,i)=>`<tr><td style="width:18%"><textarea data-path="rubric.${i}.element" placeholder="평가 요소(배점)">${esc(r.element)}</textarea></td><td><textarea data-path="rubric.${i}.high" placeholder="우수">${esc(r.high)}</textarea></td><td><textarea data-path="rubric.${i}.mid" placeholder="보통">${esc(r.mid)}</textarea></td><td><textarea data-path="rubric.${i}.low" placeholder="미흡">${esc(r.low)}</textarea></td><td style="width:30px;border:none"><button class="del" data-del="rubric" data-i="${i}" title="삭제">✕</button></td></tr>`).join("");
+   return `<div class="f"><label>평가 루브릭</label><div class="hint">학습목표마다 평가 요소를 하나씩 만들어 보세요.</div><table class="rows"><tr><th>평가 요소</th><th>우수</th><th>보통</th><th>미흡</th><th style="border:none;background:none"></th></tr>${rows}</table><button class="add" data-add="rubric">+ 평가 요소 추가</button></div>${ta("passfail","산출물 Pass/Fail 조건 (선택)","산출물이 갖추어야 할 최소 조건",3)}`;},
+ ()=>STAGES.map(([k,l])=>`<div class="stagebox"><div class="t">${l}<input type="text" data-path="stages.${k}.period" value="${esc(S.plan.stages[k].period)}" placeholder="차시 (예: 1차시)"></div><textarea data-path="stages.${k}.activity" rows="3" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff;resize:vertical;overflow:hidden" placeholder="이 단계에서 학생이 하는 일">${esc(S.plan.stages[k].activity)}</textarea></div>`).join(""),
+ ()=>{const rows=S.plan.lessons.map((r,i)=>`<tr><td style="width:12%"><input data-path="lessons.${i}.period" value="${esc(r.period)}" placeholder="차시"></td><td style="width:16%"><textarea data-path="lessons.${i}.stage" placeholder="단계">${esc(r.stage)}</textarea></td><td><textarea data-path="lessons.${i}.activities" placeholder="주요 활동">${esc(r.activities)}</textarea></td><td style="width:28%"><textarea data-path="lessons.${i}.ai" placeholder="AI·디지털 활용과 목적">${esc(r.ai)}</textarea></td><td style="width:30px;border:none"><button class="del" data-del="lessons" data-i="${i}" title="삭제">✕</button></td></tr>`).join("");
+   return `<div class="f"><label>차시별 계획</label><div class="hint">상세 설계할 차시에는 ★를 붙여 주세요. (예: 4차시★)</div><table class="rows"><tr><th>차시</th><th>단계</th><th>주요 활동</th><th>AI·디지털 활용</th><th style="border:none;background:none"></th></tr>${rows}</table><button class="add" data-add="lessons">+ 차시 추가</button></div><div class="grid2">${tx("genAI","생성형 AI 도구")}${tx("edutech","에듀테크 도구")}</div>${ta("aiPlan","AI 활용 방안 (종합)","도구별로 무엇을 위해 쓰는지, 검증·출처·대안까지",4)}${ta("notes.selectReason","상세 설계할 2개 차시와 고른 이유","단원 안에서 그 차시들이 어떤 역할을 하나요? (공부용 메모)",3)}`;},
+ ()=>featForm(0), ()=>featForm(1),
+ ()=>`${ta("materials","교수·학습자료","활동지, PPT, 앱 링크 등",3)}${ta("refs","참고문헌","한 줄에 하나씩",4)}<details style="margin-top:8px"><summary style="cursor:pointer;font-weight:700">수업 후 작성: 수업 성찰</summary><div style="padding-top:10px">${ta("reflGood","잘된 점","",3)}${ta("reflImprove","개선할 점","",3)}${ta("reflResult","학습 활동 결과","",3)}</div></details>`
+];
+function featForm(n){const b=`featured.${n}`;
+  return `<div class="grid2">${tx(b+".period","차시","","예: 4차시")}${tx(b+".title","차시 제목")}</div>${ta(b+".objective","이 차시의 학습 목표","",2)}`+
+  FEAT.map(([k,l])=>`<div class="stagebox"><div class="t">${l}</div>${ta(`${b}.${k}.question`,"핵심 질문","",2)}${ta(`${b}.${k}.activity`,"활동 내용","",3)}${ta(`${b}.${k}.notes`,"자료 및 유의점 (예상 오류·피드백 포함)","",2)}</div>`).join("");}
+
+function renderNav(){
+  const st=calcProgress();
+  $("stepNav").innerHTML=STEPS.map((s,i)=>`<button class="stepbtn ${i===S.step?"on":""} ${st[i]===2?"done":st[i]===1?"part":""}" data-step="${i}"><span class="n">${st[i]===2?"✓":i+1}</span><span>${s.title}</span></button>`).join("")+
+   `<div class="navnote">진행률 <b>${S.plan.progress.pct}%</b><br>● 초록: 작성함 · 주황: 쓰는 중<br>순서대로 하지 않아도 돼요. 앞 단계로 돌아가 고치는 것도 좋은 공부예요.</div>`;
+}
+function updateNav(){ // 버튼을 다시 만들지 않고 상태만 갱신 (클릭이 끊기지 않도록)
+  const st=calcProgress(), btns=$("stepNav").querySelectorAll(".stepbtn");
+  if(btns.length!==STEPS.length) return renderNav();
+  btns.forEach((b,i)=>{b.classList.toggle("done",st[i]===2);b.classList.toggle("part",st[i]===1);b.querySelector(".n").textContent=st[i]===2?"✓":i+1;});
+  const nn=$("stepNav").querySelector(".navnote b"); if(nn) nn.textContent=S.plan.progress.pct+"%";
+}
+function renderStep(){
+  const s=STEPS[S.step], i=S.step, ck=S.plan.checks[i]||[];
+  $("stepMain").innerHTML=`
+   <div class="stephead"><h2>${i+1}. ${s.title}</h2><span class="lv">${s.lv}</span></div>
+   <div class="guide">
+     <div class="todo"><b>이 단계에서 할 일</b><br>${s.todo}</div>
+     <details open><summary>왜 중요할까요?</summary><div class="in">${s.why}</div></details>
+     <details open><summary>스스로 점검하기</summary><div class="in checks">${s.checks.map((c,j)=>`<label><input type="checkbox" data-check="${j}" ${ck[j]?"checked":""}><span>${c}</span></label>`).join("")}</div></details>
+     <details><summary>자주 하는 실수</summary><div class="in"><ul>${s.mistakes.map(m=>`<li>${m}</li>`).join("")}</ul></div></details>
+     <details><summary>다른 단원 예시 보기 (구조만 참고하세요)</summary><div class="in"><div class="example">${esc(s.example)}</div></div></details>
+   </div>
+   <div class="form"><h3>✏️ 직접 써 보기</h3>${FORMS[i]()}</div>
+   <div class="navrow"><button class="btn ghost" id="prevBtn" ${i===0?"disabled":""}>← 이전 단계</button><button class="btn" id="nextBtn">${i===STEPS.length-1?"전체 보기":"다음 단계 →"}</button></div>`;
+  $("stepMain").scrollTop=0;
+  $("stepMain").querySelectorAll("textarea").forEach(autosize);
+  $("prevBtn").onclick=()=>goStep(i-1);
+  $("nextBtn").onclick=()=>i===STEPS.length-1?openPreview(S.plan,"설계안 전체 보기"):goStep(i+1);
+}
+function renderMentor(){
+  const list=S.chat[S.step]||[];
+  const box=$("msgs");
+  box.innerHTML=list.length?"":`<div class="msg bot"><span class="tag">AI 멘토</span>${esc(intro())}</div>`;
+  list.forEach(m=>box.appendChild(bubble(m)));
+  box.scrollTop=box.scrollHeight;
+  const h=S.hint[S.step]||0;
+  $("hintBtn").textContent=h>=3?"힌트 다시":`힌트 ${h+1}단계`+(h===2?" (예시)":"");
+  $("remLbl").textContent=LOCAL?"시험 모드":(S.remaining!=null?`오늘 남은 AI 사용: ${S.remaining}회`:"");
+}
+function intro(){return `${S.step+1}단계 "${STEPS[S.step].title}"이에요.\n\n먼저 왼쪽 안내를 읽고 직접 써 보세요. 다 쓰면 '피드백 받기'를 눌러 주세요.\n막히면 '힌트'를 누르세요. 질문 → 구체적 힌트 → 다른 단원 예시 순서로 조금씩 도와드려요.`;}
+function bubble(m){const d=document.createElement("div");d.className="msg "+(m.role==="user"?"user":m.sys?"sys":"bot");
+  if(m.role!=="user"&&!m.sys){const t=document.createElement("span");t.className="tag";t.textContent="AI 멘토";d.appendChild(t);}
+  d.appendChild(document.createTextNode(m.label||m.content));return d;}
+function renderAll(){renderNav();renderStep();renderMentor();}
+function goStep(i){if(i<0||i>=STEPS.length)return;S.step=i;markDirty();renderAll();$("mentor").classList.remove("open");}
+function autosize(t){t.style.height="auto";t.style.height=(t.scrollHeight+2)+"px";}
+
+// ---------------------------------------------------------------- 입력 이벤트
+$("stepMain").addEventListener("input",e=>{
+  const el=e.target;
+  if(el.dataset.path){set(el.dataset.path,el.value); if(el.tagName==="TEXTAREA")autosize(el); markDirty(); if(["author","school"].includes(el.dataset.path)){$("whoLbl").textContent=`${S.plan.author} 선생님${S.plan.school?" · "+S.plan.school:""}`;}}
+});
+$("stepMain").addEventListener("change",e=>{
+  const el=e.target;
+  if(el.dataset.comp){S.plan.competencies=[...document.querySelectorAll("[data-comp]:checked")].map(x=>x.dataset.comp).join(", ");markDirty();updateNav();}
+  if(el.dataset.check!=null){const a=S.plan.checks[S.step]||[];a[+el.dataset.check]=el.checked;S.plan.checks[S.step]=a;markDirty();}
+  if(el.dataset.path) updateNav();
+});
+$("stepMain").addEventListener("click",e=>{
+  const a=e.target.closest("[data-add]"),d=e.target.closest("[data-del]");
+  if(a){const k=a.dataset.add;S.plan[k].push(k==="lessons"?{period:`${S.plan.lessons.length+1}차시`,stage:"",activities:"",ai:""}:{element:"",high:"",mid:"",low:""});markDirty();renderStep();}
+  if(d){S.plan[d.dataset.del].splice(+d.dataset.i,1);markDirty();renderStep();updateNav();}
+});
+$("stepNav").addEventListener("click",e=>{const b=e.target.closest("[data-step]");if(b)goStep(+b.dataset.step);});
+$("mToggle").onclick=()=>$("mentor").classList.toggle("open");
+
+// ---------------------------------------------------------------- AI 멘토
+function stepContent(i,p){
+  const L=[];const add=(l,v)=>L.push(`${l}: ${String(v||"").trim()||"(비어 있음)"}`);
+  switch(i){
+    case 0: add("대상",p.target);add("교과목",p.subject);add("대단원",p.bigUnit);add("중단원",p.midUnit);add("주제",p.topic);break;
+    case 1: add("성취기준",p.standard);add("성취기준 분석 메모",p.notes.standardVerbs);break;
+    case 2: add("탐구 질문",p.dq);add("PBL 문제",p.problem);add("최종 산출물과 공개 대상",p.notes.product);add("수업 방법",p.method);break;
+    case 3: add("학습목표",p.objectives);add("교과역량",p.competencies);break;
+    case 4: p.rubric.forEach(r=>L.push(`[${r.element||"평가 요소"}] 우수: ${r.high} / 보통: ${r.mid} / 미흡: ${r.low}`)); if(!p.rubric.length)L.push("(루브릭 비어 있음)"); add("산출물 Pass/Fail",p.passfail);break;
+    case 5: STAGES.forEach(([k,l])=>add(`${l} (${p.stages[k].period||"차시 미정"})`,p.stages[k].activity));break;
+    case 6: p.lessons.forEach(r=>L.push(`${r.period} | ${r.stage} | ${r.activities} | AI·디지털: ${r.ai}`)); if(!p.lessons.length)L.push("(차시별 계획 비어 있음)"); add("생성형 AI",p.genAI);add("에듀테크",p.edutech);add("AI 활용 방안",p.aiPlan);add("상세 설계할 2개 차시와 이유",p.notes.selectReason);break;
+    case 7: case 8: {const f=p.featured[i-7];add("차시",f.period);add("차시 제목",f.title);add("학습 목표",f.objective);FEAT.forEach(([k,l])=>{add(`${l} 핵심 질문`,f[k].question);add(`${l} 활동`,f[k].activity);add(`${l} 자료 및 유의점`,f[k].notes);});break;}
+    case 9: add("교수·학습자료",p.materials);add("참고문헌",p.refs);break;
+  }
+  return L.join("\n");
+}
+function wholeSummary(p){
+  return [0,1,2,3,4,5,6,7,8].filter(i=>i!==S.step).map(i=>`<${i+1}. ${STEPS[i].title}>\n${stepContent(i,p)}`).join("\n\n").slice(0,12000);
+}
+async function askMentor(mode,text){
+  if(S.busy) return;
+  const i=S.step, s=STEPS[i];
+  let req,label;
+  if(mode==="feedback"){req="이 단계에서 제가 쓴 내용에 피드백해 주세요. 점검 기준에 비추어 보고, 대신 써 주지 말고 제가 스스로 고칠 수 있게 도와주세요.";label="✅ 피드백 받기";}
+  else if(mode==="hint"){const h=Math.min(3,(S.hint[i]||0)+1);req=`힌트 ${h}단계를 주세요.`;label=`💡 힌트 ${h}단계${h===3?" (다른 단원 예시)":""}`;}
+  else {req=text;label=text;}
+  const prompt=`[현재 단계] ${i+1}. ${s.title}\n[이 단계에서 할 일] ${s.todo}\n[이 단계 점검 기준]\n${s.checks.map(c=>"· "+c).join("\n")}\n\n[이 단계에서 교사가 쓴 내용]\n${stepContent(i,S.plan)}\n\n[설계안의 다른 단계(참고)]\n${wholeSummary(S.plan)}\n\n[요청] ${req}`;
+  const list=S.chat[i]=S.chat[i]||[];
+  const history=list.filter(m=>!m.sys).map(m=>({role:m.role,content:m.role==="user"?(m.q||m.content):m.content}));
+  list.push({role:"user",content:label,q:req,label});
+  renderMentor();
+  const ty=document.createElement("div");ty.className="msg bot typing";ty.innerHTML="<span></span><span></span><span></span>";$("msgs").appendChild(ty);$("msgs").scrollTop=$("msgs").scrollHeight;
+  S.busy=true;setMentorBusy(true);
+  try{
+    const r=await api({action:"ai",name:S.name,step:i+1,mode,prompt,history});
+    if(!r.ok){list.push({role:"assistant",content:r.error||"응답을 받지 못했어요.",sys:true}); if(r.limit)S.remaining=0;}
+    else{list.push({role:"assistant",content:r.text}); S.remaining=r.remaining; if(mode==="hint")S.hint[i]=Math.min(3,(S.hint[i]||0)+1); if(S.hint[i]>=3&&mode==="hint")S.hint[i]=3;}
+  }catch(e){list.push({role:"assistant",content:"연결에 실패했어요. 잠시 후 다시 시도해 주세요.",sys:true});}
+  S.busy=false;setMentorBusy(false);
+  if(mode==="hint"&&(S.hint[i]||0)>=3&&$("hintBtn").textContent==="힌트 다시"){}
+  markDirty();renderMentor();
+}
+function setMentorBusy(b){["fbBtn","hintBtn","askBtn"].forEach(id=>$(id).disabled=b);}
+$("fbBtn").onclick=()=>askMentor("feedback");
+$("hintBtn").onclick=()=>{ if((S.hint[S.step]||0)>=3) S.hint[S.step]=0; askMentor("hint"); };
+$("askBtn").onclick=()=>{const t=$("askIn").value.trim();if(!t)return;$("askIn").value="";askMentor("ask",t);};
+$("askIn").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();$("askBtn").click();}});
+
+// ---------------------------------------------------------------- 전체 보기 / 출력
+function planText(p){
+  const L=[];
+  L.push(`주제: 생성형 AI 활용 PBL 수업 설계-실행-평가 [${p.topic}]`,`${p.author} / ${p.school}`,"","1. 교육과정 및 성취기준 분석",`대상: ${p.target}  교과목: ${p.subject}`,`대단원: ${p.bigUnit}  중단원: ${p.midUnit}`,`성취기준: ${p.standard}`,`탐구질문: ${p.dq}`,`수업방법: ${p.method}`);
+  L.push("","2. 교수・학습 활동 설계",`PBL 문제: ${p.problem}`,`학습목표: ${p.objectives}`,`교과역량: ${p.competencies}`);
+  return L.join("\n");
+}
+function cell(v,attrs){return `<td ${attrs||""}>${esc(v)}</td>`;}
+function renderPreview(p){
+  const comps=p.competencies||"";
+  return `<div class="titlebox"><div class="k">주제</div><div class="v"><div class="fixed">생성형 AI 활용 PBL 수업 설계-실행-평가</div><span class="topic">[ ${esc(p.topic||"주제")} ]</span></div></div>
+  <div class="byline">${esc(p.author||"○○○")}<br>${esc(p.school||"○○학교")}</div>
+  <div class="sec">1. 교육과정 및 성취기준 분석</div>
+  <table><tr><th>대상</th>${cell(p.target,'class="c"')}<th>교과목</th>${cell(p.subject,'class="c"')}</tr><tr><th>대단원</th>${cell(p.bigUnit,'class="c"')}<th>중 단원</th>${cell(p.midUnit,'class="c"')}</tr>
+  <tr><th>성취기준</th>${cell(p.standard,'colspan="3"')}</tr><tr><th>탐구질문</th>${cell(p.dq,'colspan="3"')}</tr><tr><th>수업방법</th>${cell(p.method,'colspan="3"')}</tr><tr><th>생성형<br>AI 활용</th>${cell(p.genAI)}<th>에듀테크</th>${cell(p.edutech)}</tr></table>
+  <div class="sec">2. 교수・학습 활동 설계</div>
+  <table><tr><th>PBL<br>문제</th>${cell(p.problem,'colspan="2"')}</tr><tr><th>학습<br>목표</th>${cell(p.objectives,'colspan="2"')}</tr>
+  <tr><th>교과<br>역량</th><td colspan="2">${COMPS.map(c=>(comps.includes(c)?"☑ ":"☐ ")+c).join("   ")}</td></tr>
+  <tr><th>단계</th><th>교수․학습 활동</th><th style="width:80px">차시</th></tr>
+  ${STAGES.map(([k,l])=>`<tr><th>${l}</th>${cell(p.stages[k].activity)}${cell(p.stages[k].period,'class="c"')}</tr>`).join("")}
+  <tr><th>AI 활용<br>방안</th>${cell(p.aiPlan)}<td class="c">전 차시</td></tr></table>
+  <div class="sec">3. 차시별 교수·학습 활동 계획</div>
+  <table><tr><th>차시</th><th style="width:110px">단계</th><th style="width:auto">주요 활동</th><th style="width:28%">AI, 디지털 활용</th></tr>${p.lessons.map(r=>`<tr>${cell(r.period,'class="c"')}${cell(r.stage,'class="c"')}${cell(r.activities)}${cell(r.ai)}</tr>`).join("")||'<tr><td colspan="4"></td></tr>'}</table>
+  <div class="sec">4. 평가 루브릭</div>
+  <table><tr><th>평가 요소</th><th>우수</th><th>보통</th><th>미흡</th></tr>${p.rubric.map(r=>`<tr><th>${esc(r.element)}</th>${cell(r.high)}${cell(r.mid)}${cell(r.low)}</tr>`).join("")}${(p.passfail||"").trim()?`<tr><th>산출물<br>Pass/Fail</th>${cell(p.passfail,'colspan="3"')}</tr>`:""}</table>
+  <div class="sec">5. 차시별 교수·학습 지도안</div>
+  ${p.featured.map((f,n)=>`<table style="margin-top:${n?16:0}px"><tr><th>${esc(f.period)}</th>${cell(f.title)}</tr></table><table style="margin-top:-1px"><tr><th>학습 목표</th>${cell(f.objective,'colspan="2"')}</tr><tr><th>수업과정</th><th style="width:auto">활동 내용</th><th style="width:26%">자료 및 유의점</th></tr>
+   ${[["intro","도입","도입 질문"],["dev1","전개","전개 질문"],["dev2","전개","전개 질문"],["wrap","정리","정리 질문"]].map(([k,l,q])=>`<tr><th rowspan="2">${l}</th><td class="q">[${q}] ${esc(f[k].question)}</td>${cell(f[k].notes,'rowspan="2"')}</tr><tr>${cell(f[k].activity)}</tr>`).join("")}</table>`).join("")}
+  <div class="sec">6. 교수·학습자료</div><div style="white-space:pre-wrap">${esc(p.materials)}</div>
+  <div class="sec">7. 수업 성찰</div><div class="sub2">1) 잘된 점</div><table><tr>${cell(p.reflGood)}</tr></table><div class="sub2">2) 개선할 점</div><table><tr>${cell(p.reflImprove)}</tr></table><div class="sub2">3) 학습 활동 결과</div><table><tr>${cell(p.reflResult)}</tr></table>
+  <div class="sec">8. 참고문헌</div><div style="white-space:pre-wrap">${esc(p.refs)}</div>`;
+}
+let modalPlan=null;
+function openPreview(p,title){modalPlan=p;$("modalTitle").textContent=title;$("modalDoc").innerHTML=renderPreview(p);$("modal").classList.remove("hidden");}
+$("modalClose").onclick=()=>$("modal").classList.add("hidden");
+$("modal").addEventListener("click",e=>{if(e.target.id==="modal")$("modal").classList.add("hidden");});
+$("previewBtn").onclick=()=>openPreview(S.plan,"설계안 전체 보기");
+async function downloadHwpx(p){
+  try{
+    const bytes=await buildHwpx(mergePlan(p));
+    const blob=new Blob([bytes],{type:"application/hwp+zip"});
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+    a.download=`PBL수업설계안_${(p.author||"")}_${(p.topic||"수업").replace(/[\\/:*?"<>|]/g,"").slice(0,30)}.hwpx`;
+    document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);
+    toast("한글 파일을 내려받았어요");
+  }catch(e){toast("한글 파일을 만들지 못했어요");console.error(e);}
+}
+$("hwpBtn").onclick=()=>downloadHwpx(S.plan);
+$("modalHwp").onclick=()=>modalPlan&&downloadHwpx(modalPlan);
+
+// ---------------- HWPX export (fills the uploaded template) ----------------
+const HPNS="http://www.hancom.co.kr/hwpml/2011/paragraph";
+function kids(el,name){ return [...el.children].filter(c=>c.localName===name); }
+function cellAt(tbl,r,c){
+  for(const tr of kids(tbl,"tr")) for(const tc of kids(tr,"tc")){
+    const a=kids(tc,"cellAddr")[0];
+    if(+a.getAttribute("rowAddr")===r && +a.getAttribute("colAddr")===c) return tc;
+  }
+  return null;
+}
+function setParaText(p,text){
+  const runs=kids(p,"run");
+  let target=runs.find(r=>kids(r,"t").length);
+  runs.forEach(r=>{
+    if(r===target) return;
+    const ts=kids(r,"t");
+    if(ts.length && r.children.length===ts.length) r.remove(); else ts.forEach(t=>t.remove());
+  });
+  if(!target){
+    target=p.ownerDocument.createElementNS(HPNS,"hp:run");
+    target.setAttribute("charPrIDRef", runs[0]?.getAttribute("charPrIDRef")||"0");
+    const first=kids(p,"run")[0]; first? p.insertBefore(target,first) : p.appendChild(target);
+  }
+  const ts=kids(target,"t"); ts.slice(1).forEach(t=>t.remove());
+  let t=ts[0]; if(!t){ t=p.ownerDocument.createElementNS(HPNS,"hp:t"); target.appendChild(t); }
+  t.textContent=text;
+}
+function fillParas(container, protoFirst, protoRest, text, before){
+  const lines=String(text??"").split("\n");
+  lines.forEach((ln,i)=>{
+    const np=(i===0?protoFirst:protoRest).cloneNode(true);
+    setParaText(np,ln);
+    before? container.insertBefore(np,before) : container.appendChild(np);
+  });
+}
+function setCell(tc,text){
+  if(!tc) return;
+  const sub=kids(tc,"subList")[0], ps=kids(sub,"p");
+  const first=ps[0], rest=ps[1]||ps[0];
+  ps.forEach(p=>p.remove());
+  fillParas(sub, first, rest, text);
+}
+function reRows(tbl, headerCount, protoRow, items, fill, tailRow){
+  kids(tbl,"tr").slice(headerCount).forEach(tr=>tr.remove());
+  const rows=[...items];
+  if(!rows.length) rows.push(null);
+  let r=headerCount;
+  const setAddr=(tr,row)=>kids(tr,"tc").forEach(tc=>kids(tc,"cellAddr")[0].setAttribute("rowAddr",row));
+  rows.forEach(it=>{ const tr=protoRow.cloneNode(true); setAddr(tr,r); tbl.appendChild(tr); fill(tr,it,r); r++; });
+  if(tailRow){ setAddr(tailRow,r); tbl.appendChild(tailRow); r++; }
+  tbl.setAttribute("rowCnt",r);
+}
+function rowCell(tr,c){ return kids(tr,"tc").find(tc=>+kids(tc,"cellAddr")[0].getAttribute("colAddr")===c); }
+
+async function buildHwpx(p){
+  if(!window.JSZip) throw new Error("nozip");
+  const tz=await JSZip.loadAsync(document.getElementById("hwpx-tpl").textContent.trim(),{base64:true});
+  let xml=await tz.file("Contents/section0.xml").async("string");
+  const doc=new DOMParser().parseFromString(xml,"application/xml");
+  if(doc.getElementsByTagName("parsererror").length) throw new Error("parse");
+  const sec=doc.documentElement;
+  const P=kids(sec,"p");
+  const T=[...doc.getElementsByTagNameNS(HPNS,"tbl")];
+
+  // title + byline
+  { const ps=kids(kids(cellAt(T[0],0,1),"subList")[0],"p"); const ts=[...ps[1].getElementsByTagNameNS(HPNS,"t")];
+    if(ts.length>=3){ ts[0].textContent="[ "; ts[1].textContent=p.topic||"주제"; ts[2].textContent=" ]"; } }
+  setParaText(P[1], p.author||"○○○"); setParaText(P[2], p.school||"○○학교");
+
+  // 1. 교육과정 및 성취기준 분석
+  [[0,1,"target"],[0,3,"subject"],[1,1,"bigUnit"],[1,3,"midUnit"],[2,1,"standard"],[3,1,"dq"],[4,1,"method"],[5,1,"genAI"],[5,3,"edutech"]]
+    .forEach(([r,c,k])=>setCell(cellAt(T[1],r,c),p[k]));
+
+  // 2. 교수·학습 활동 설계
+  setCell(cellAt(T[2],0,1),p.problem); setCell(cellAt(T[2],1,1),p.objectives);
+  const has=c=>(p.competencies||"").includes(c), mk=c=>(has(c)?"☑ ":"☐ ")+c;
+  setCell(cellAt(T[2],2,2),mk("문제해결")); setCell(cellAt(T[2],2,3),mk("추론")); setCell(cellAt(T[2],2,4),mk("의사소통"));
+  setCell(cellAt(T[2],2,5),mk("연결")+"  "+mk("정보처리"));
+  STAGES.forEach(([k],i)=>{ setCell(cellAt(T[2],4+i,1),p.stages[k].activity); setCell(cellAt(T[2],4+i,6),p.stages[k].period); });
+  setCell(cellAt(T[2],10,1),p.aiPlan);
+
+  // 3. 차시별 계획
+  { const proto=kids(T[3],"tr")[1].cloneNode(true);
+    reRows(T[3],1,proto,p.lessons,(tr,it)=>{ ["period","stage","activities","ai"].forEach((f,c)=>setCell(rowCell(tr,c),it?it[f]:"")); }); }
+
+  // 4. 루브릭
+  { const trs=kids(T[4],"tr"), proto=trs[1].cloneNode(true), tail=trs[trs.length-1];
+    tail.remove();
+    let tailRow=null;
+    if((p.passfail||"").trim()){ tailRow=tail; setCell(rowCell(tail,1),p.passfail); setCell(rowCell(tail,0),"산출물\nPass/Fail"); }
+    reRows(T[4],1,proto,p.rubric,(tr,it)=>{ ["element","high","mid","low"].forEach((f,c)=>setCell(rowCell(tr,c),it?it[f]:"")); },tailRow); }
+
+  // 5. 차시별 지도안 (2개)
+  { const head=P[24], body=P[25], gap=P[26];
+    const head2=head.cloneNode(true), body2=body.cloneNode(true), gap2=gap.cloneNode(true);
+    sec.insertBefore(gap2, gap); sec.insertBefore(head2, gap); sec.insertBefore(body2, gap);
+    const fillFeat=(hp,bp,f)=>{
+      const th=hp.getElementsByTagNameNS(HPNS,"tbl")[0], tb=bp.getElementsByTagNameNS(HPNS,"tbl")[0];
+      setCell(cellAt(th,0,0),f.period); setCell(cellAt(th,0,1),f.title);
+      setCell(cellAt(tb,0,1),f.objective);
+      [["intro",2,"도입 질문"],["dev1",4,"전개 질문"],["dev2",6,"전개 질문"],["wrap",8,"정리 질문"]].forEach(([k,r,lab])=>{
+        const s=f[k]; setCell(cellAt(tb,r,1),`[${lab}] ${s.question}`); setCell(cellAt(tb,r+1,1),s.activity); setCell(cellAt(tb,r,2),s.notes);
+      });
+    };
+    fillFeat(head,body,p.featured[0]); fillFeat(head2,body2,p.featured[1]); }
+
+  // 6. 교수·학습자료, 8. 참고문헌 (plain paragraphs, styled like the reference lines)
+  const refFirst=P.findIndex(x=>/교육부\s*\(2022\)/.test(x.textContent));
+  const refProto=P[refFirst].cloneNode(true);
+  if((p.materials||"").trim()){
+    const after=P[28].nextSibling;
+    fillParas(sec, refProto, refProto, p.materials, after);
+  }
+  const refEnd=refFirst+6;
+  const anchor=P[refEnd]||null;
+  P.slice(refFirst,refEnd).forEach(x=>x.remove());
+  fillParas(sec, refProto, refProto, p.refs||"", anchor);
+
+  // 7. 수업 성찰
+  setCell(cellAt(T[7],0,0),p.reflGood); setCell(cellAt(T[8],0,0),p.reflImprove); setCell(cellAt(T[9],0,0),p.reflResult);
+
+  let out=new XMLSerializer().serializeToString(doc);
+  if(!out.startsWith("<?xml")) out='<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>'+out;
+
+  const z=new JSZip();
+  z.file("mimetype","application/hwp+zip",{compression:"STORE"});
+  for(const name of Object.keys(tz.files)){
+    if(name==="mimetype" || tz.files[name].dir) continue;
+    let data;
+    if(name==="Contents/section0.xml") data=out;
+    else if(name==="Preview/PrvText.txt") data=planText(p).slice(0,1000);
+    else data=await tz.file(name).async("uint8array");
+    z.file(name,data,{compression:"DEFLATE"});
+  }
+  return z.generateAsync({type:"uint8array"});
+}
+
+
+// ---------------------------------------------------------------- 관리자
+let ADMIN_KEY="";
+function showAdmin(){
+  $("loginView").classList.add("hidden");$("appView").classList.add("hidden");$("adminView").classList.remove("hidden");
+  $("adminBox").innerHTML=`<h2>관리자 화면</h2><div class="card" style="margin:0"><div class="field"><label>관리자 암호</label><input id="akIn" type="password"></div><div class="err" id="akErr"></div><button class="btn" id="akBtn">들어가기</button>${LOCAL?'<div class="note">시험 모드(API_URL 미설정)에서는 관리자 화면을 쓸 수 없어요.</div>':""}</div>`;
+  $("akBtn").onclick=()=>{ADMIN_KEY=$("akIn").value;loadAdmin();};
+  $("akIn").addEventListener("keydown",e=>{if(e.key==="Enter")$("akBtn").click();});
+}
+async function loadAdmin(){
+  const errEl=$("akErr"); if(errEl) errEl.textContent="불러오는 중…";
+  try{
+    const r=await api({action:"admin_list",key:ADMIN_KEY});
+    if(!r.ok) throw new Error(r.error);
+    renderAdmin(r);
+  }catch(e){ if($("akErr")) $("akErr").textContent=e.message||"불러오기 실패"; else toast(e.message||"불러오기 실패"); }
+}
+function renderAdmin(r){
+  const u=r.usage, c=r.config;
+  const rows=r.teachers.map(t=>{const st=(t.progress&&t.progress.steps)||[];const pct=t.progress?t.progress.pct:0;const bn=u.byName[t.name]||{month:0,today:0};
+    return `<tr><td><b>${esc(t.name)}</b><br><span style="color:var(--muted);font-size:14px">${esc(t.school)}</span></td><td>${esc(t.topic)||'<span style="color:#aaa">(주제 미정)</span>'}</td>
+    <td><div class="bar10">${STEPS.map((s,i)=>`<i class="${st[i]===2?"d":st[i]===1?"p":""}" title="${i+1}. ${s.title}"></i>`).join("")}</div><span style="font-size:13px;color:var(--muted)">${pct}% · ${t.step}단계</span></td>
+    <td style="font-size:14px">${esc(t.saved)}</td><td style="font-size:14px">오늘 ${bn.today} / 이번 달 ${bn.month}</td>
+    <td><button class="btn small ghost" data-view="${esc(t.name)}">보기</button> <button class="btn small" data-hwp="${esc(t.name)}">한글</button></td></tr>`;}).join("");
+  $("adminBox").innerHTML=`<h2>관리자 화면</h2>
+   <div class="stats">
+    <div class="stat"><div class="l">참여 교사</div><div class="v">${r.teachers.length}명</div></div>
+    <div class="stat"><div class="l">오늘 AI 사용</div><div class="v">${u.todayCalls}회</div><div class="l">약 $${u.todayCost}</div></div>
+    <div class="stat"><div class="l">이번 달 AI 사용</div><div class="v">${u.monthCalls}회</div><div class="l">약 $${u.monthCost} (추정)</div></div>
+   </div>
+   <div class="panel"><h3>설정</h3><div class="cfg">
+     <label>AI 모델 <select id="cfgModel">${r.models.map(m=>`<option value="${m.key}" ${m.key===c.model?"selected":""}>${m.label}</option>`).join("")}</select></label>
+     <label>1인 하루 AI 사용 제한 <input id="cfgCap" type="number" min="1" max="500" value="${c.dailyCap}" style="width:90px">회</label>
+     <button class="btn small" id="cfgSave">설정 저장</button><button class="btn small ghost" id="refresh">새로고침</button></div>
+     <div class="note">비용은 토큰 사용량으로 계산한 추정치예요. 정확한 금액은 Claude 콘솔에서 확인하세요.</div></div>
+   <div class="panel"><h3>설계안 진행 현황</h3><table class="tt"><tr><th>교사</th><th>주제</th><th>진행(10단계)</th><th>최근 저장</th><th>AI 사용</th><th>출력</th></tr>${rows||'<tr><td colspan="6" style="color:#aaa">아직 참여한 교사가 없어요.</td></tr>'}</table></div>`;
+  $("cfgSave").onclick=async()=>{try{const x=await api({action:"admin_config",key:ADMIN_KEY,model:$("cfgModel").value,dailyCap:+$("cfgCap").value});if(!x.ok)throw new Error(x.error);toast("설정을 저장했어요");}catch(e){toast(e.message||"저장 실패");}};
+  $("refresh").onclick=loadAdmin;
+  $("adminBox").querySelectorAll("[data-view],[data-hwp]").forEach(b=>b.onclick=async()=>{
+    const nm=b.dataset.view||b.dataset.hwp;
+    try{const x=await api({action:"admin_get",key:ADMIN_KEY,name:nm});if(!x.ok)throw new Error(x.error);const p=mergePlan(x.plan);
+      if(b.dataset.view) openPreview(p,`${nm} 선생님 설계안`); else downloadHwpx(p);}catch(e){toast(e.message||"불러오기 실패");}
+  });
+}
+
+if(location.hash==="#admin") showAdmin();
+</script>
+</body>
+</html>
