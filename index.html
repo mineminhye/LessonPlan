@@ -358,6 +358,11 @@ async function login(){
   try{
     const r=await api({action:"load",name});
     if(!r.ok) throw new Error(r.error||"불러오기 실패");
+    let migrated=false;
+    if(!LOCAL&&!r.exists){ // 시험 모드에서 쓰던 내용이 이 브라우저에 있으면 가져오기
+      try{const loc=JSON.parse(localStorage.getItem("pblmentor-local-"+name)||"null");
+        if(loc&&loc.plan){r.plan=loc.plan;r.chat=loc.chat||{};r.step=loc.step||1;r.school=loc.school||"";migrated=true;}}catch(e){}
+    }
     S.name=name; S.school=school||r.school||"";
     S.plan=mergePlan(r.plan); S.chat=r.chat&&typeof r.chat==="object"?r.chat:{}; S.hint={};
     S.step=Math.max(0,Math.min(STEPS.length-1,(+r.step||1)-1));
@@ -367,8 +372,8 @@ async function login(){
     try{localStorage.setItem("pblmentor-last",JSON.stringify({name:$("inName").value.trim(),school}));}catch(e){}
     $("loginView").classList.add("hidden");$("appView").classList.remove("hidden");
     $("whoLbl").textContent=`${S.plan.author||name} 선생님${S.school?" · "+S.school:""}`;
-    renderAll(); if(!r.exists) save(true);
-    toast(r.exists?"지난번 설계안을 불러왔어요":"새 설계안을 시작해요");
+    renderAll(); if(!r.exists){ S.dirty=true; save(true); }
+    toast(r.exists?"지난번 설계안을 불러왔어요":migrated?"시험 모드에서 쓰던 내용을 서버로 옮겼어요":"새 설계안을 시작해요");
   }catch(e){$("loginErr").textContent=e.message||"연결에 실패했어요. 잠시 후 다시 시도해 주세요.";}
   finally{$("loginBtn").disabled=false;}
 }
